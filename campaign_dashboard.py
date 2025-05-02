@@ -26,7 +26,7 @@ st.markdown("""
 
 
 # ====== Sidebar Logo ======
-with with open("ResonLabs.png", "rb") as f:
+with open("ResonLabs.png", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
 
 with st.sidebar:
