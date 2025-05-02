@@ -26,7 +26,7 @@ st.markdown("""
 
 
 # ====== Sidebar Logo ======
-with open(r"C:\Users\hroy2\OneDrive\Desktop\ResonLabs.png", "rb") as f:
+with with open("ResonLabs.png", "rb") as f:
     encoded = base64.b64encode(f.read()).decode()
 
 with st.sidebar:
@@ -229,7 +229,7 @@ div[data-testid="stDataFrame"] div[role="gridcell"] {{
 # ====== Load Data ======
 @st.cache_data
 def load_data():
-    return pd.read_excel(r"C:\\Users\\hroy2\\OneDrive\\Desktop\\my_data.xlsx")
+    return pd.read_excel("my_data.xlsx")
 
 df = load_data()
 
