@@ -123,50 +123,51 @@ st.stop()
 # File Upload Section
 encoded_logo = load_logo_b64()
 
-    st.markdown(f"""
-        <style>
-            .upload-container {{
-                max-width: 400px;
-                margin: 0 auto;
-                padding: 1rem 2rem;
-                background: #ffffff;
-                border-radius: 12px;
-                text-align: center;
-            }}
-            .upload-title {{
-                font-size: 32px;
-                font-weight: 700;
-                margin-bottom: 1rem;
-            }}
-            .upload-sub {{
-                font-size: 16px;
-                color: #64748b;
-                margin-bottom: 1.5rem;
-            }}
-            .upload-sub span {{
-                color: #4361EE;
-                font-weight: 600;
-            }}
-            section[data-testid="stFileUploader"] {{
-                text-align: center;
-                padding-top: 0.5rem;
-            }}
-        </style>
+st.markdown(f"""
+    <style>
+        .upload-container {{
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            background: #ffffff;
+            border-radius: 12px;
+            text-align: center;
+        }}
+        .upload-title {{
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }}
+        .upload-sub {{
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }}
+        .upload-sub span {{
+            color: #4361EE;
+            font-weight: 600;
+        }}
+        section[data-testid="stFileUploader"] {{
+            text-align: center;
+            padding-top: 0.5rem;
+        }}
+    </style>
 
-        <div class='upload-container'>
-            {"<img src='data:image/png;base64," + encoded_logo + "' style='width: 240px; margin-bottom: 10px;' />" if encoded_logo else ""}
-            <div class='upload-title'>Upload Your Data</div>
-            <div class='upload-sub'>Logged in as: <span>{st.session_state.username}</span></div>
-        </div>
-    """, unsafe_allow_html=True)
+    <div class='upload-container'>
+        {"<img src='data:image/png;base64," + encoded_logo + "' style='width: 240px; margin-bottom: 10px;' />" if encoded_logo else ""}
+        <div class='upload-title'>Upload Your Data</div>
+        <div class='upload-sub'>Logged in as: <span>{st.session_state.username}</span></div>
+    </div>
+""", unsafe_allow_html=True)
 
-    uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
+uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
 
-    if uploaded_file is not None:
-        st.session_state.uploaded_file = uploaded_file
-        st.rerun()
-    else:
-        st.stop()
+if uploaded_file is not None:
+    st.session_state.uploaded_file = uploaded_file
+    st.rerun()
+else:
+    st.stop()
+
 
 # Load Data Function
 @st.cache_data
@@ -1214,6 +1215,7 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
 
 
 
