@@ -89,7 +89,7 @@ st.markdown("""
 # Login Interface
 encoded_logo = load_logo_b64()
 
-    st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
+st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
     
     if encoded_logo:
         st.markdown(f"""
@@ -1214,4 +1214,5 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
 
