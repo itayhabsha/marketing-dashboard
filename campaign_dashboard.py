@@ -12,6 +12,22 @@ from pathlib import Path
 APP_DIR = Path(__file__).parent
 LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
 
+def load_logo_b64():
+    # נסיונות חכמים למציאת הקובץ
+    candidates = [
+        LOGO_PATH,
+        APP_DIR / "ResonLabs.png",
+        APP_DIR.parent / "assets" / "ResonLabs.png",
+    ]
+    tried = []
+    for p in candidates:
+        p = p.resolve()
+        tried.append(str(p))
+        if p.exists():
+            return base64.b64encode(p.read_bytes()).decode()
+    # אם לא נמצא – הצג אזהרה עם הנתיבים שנבדקו
+    st.warning("Logo not found. Tried:\n" + "\n".join(tried))
+    return ""
 
 # ====== Page Configuration ======
 st.set_page_config(
@@ -71,12 +87,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Login Interface
-if not st.session_state.get("authenticated", False):
-    try:
-        with open(LOGO_PATH, "rb") as f:
-            encoded_logo = base64.b64encode(f.read()).decode()
-    except FileNotFoundError:
-        encoded_logo = ""
+encoded_logo = load_logo_b64()
 
     st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
     
@@ -110,12 +121,7 @@ if not st.session_state.get("authenticated", False):
     st.stop()
 
 # File Upload Section
-if st.session_state.uploaded_file is None:
-    try:
-        with open(LOGO_PATH, "rb") as f:
-            encoded_logo = base64.b64encode(f.read()).decode()
-    except FileNotFoundError:
-        encoded_logo = ""
+encoded_logo = load_logo_b64()
 
     st.markdown(f"""
         <style>
@@ -236,11 +242,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar Logo
-try:
-    with open(LOGO_PATH, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-    
-    with st.sidebar:
+encoded = load_logo_b64()
+with st.sidebar:
+    if encoded:
         st.markdown(f"""
             <div style='
                 text-align: center;
@@ -251,8 +255,7 @@ try:
                 <img src="data:image/png;base64,{encoded}" style='width: 240px;' />
             </div>
         """, unsafe_allow_html=True)
-except FileNotFoundError:
-    pass
+
 
 # Global CSS Styles
 st.markdown("""
@@ -1211,3 +1214,4 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
