@@ -13,7 +13,7 @@ APP_DIR = Path(__file__).parent
 LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
 
 def load_logo_b64():
-    # נסיונות חכמים למציאת הקובץ
+    # Smart attempts to find the logo file
     candidates = [
         LOGO_PATH,
         APP_DIR / "ResonLabs.png",
@@ -25,7 +25,7 @@ def load_logo_b64():
         tried.append(str(p))
         if p.exists():
             return base64.b64encode(p.read_bytes()).decode()
-    # אם לא נמצא – הצג אזהרה עם הנתיבים שנבדקו
+    # If not found – show a warning with the checked paths
     st.warning("Logo not found. Tried:\n" + "\n".join(tried))
     return ""
 
@@ -86,97 +86,96 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Login Interface
-encoded_logo = load_logo_b64()
+# ====== LOGIN (Gate 1) ======
+if not st.session_state.authenticated:
+    encoded_logo = load_logo_b64()
 
-st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
+    st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
 
-if encoded_logo:
+    if encoded_logo:
+        st.markdown(f"""
+            <div style='text-align: center; margin-bottom: 10px;'>
+                <img src='data:image/png;base64,{encoded_logo}' style='width: 240px;' />
+            </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<div class='centered-title'>Marketing Dashboard Login</div>", unsafe_allow_html=True)
+
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login")
+
+        if submitted:
+            if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.session_state.login_attempt_failed = False
+                st.rerun()
+            else:
+                st.session_state.login_attempt_failed = True
+
+    if st.session_state.get("login_attempt_failed", False):
+        st.error("❌ Incorrect username or password. Please try again.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop()
+
+# ====== FILE UPLOAD (Gate 2) ======
+if st.session_state.authenticated and st.session_state.uploaded_file is None:
+    encoded_logo = load_logo_b64()
+
     st.markdown(f"""
-        <div style='text-align: center; margin-bottom: 10px;'>
-            <img src='data:image/png;base64,{encoded_logo}' style='width: 240px;' />
+        <style>
+            .upload-container {{
+                max-width: 400px;
+                margin: 0 auto;
+                padding: 1rem 2rem;
+                background: #ffffff;
+                border-radius: 12px;
+                text-align: center;
+            }}
+            .upload-title {{
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 1rem;
+            }}
+            .upload-sub {{
+                font-size: 16px;
+                color: #64748b;
+                margin-bottom: 1.5rem;
+            }}
+            .upload-sub span {{
+                color: #4361EE;
+                font-weight: 600;
+            }}
+            section[data-testid="stFileUploader"] {{
+                text-align: center;
+                padding-top: 0.5rem;
+            }}
+        </style>
+
+        <div class='upload-container'>
+            {"<img src='data:image/png;base64," + encoded_logo + "' style='width: 240px; margin-bottom: 10px;' />" if encoded_logo else ""}
+            <div class='upload-title'>Upload Your Data</div>
+            <div class='upload-sub'>Logged in as: <span>{st.session_state.username}</span></div>
         </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<div class='centered-title'>Marketing Dashboard Login</div>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
 
-with st.form("login_form"):
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    submitted = st.form_submit_button("Login")
+    if uploaded_file is not None:
+        st.session_state.uploaded_file = uploaded_file
+        st.rerun()
+    else:
+        st.stop()
 
-    if submitted:
-        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
-            st.session_state.authenticated = True
-            st.session_state.username = username
-            st.session_state.login_attempt_failed = False
-            st.rerun()
-        else:
-            st.session_state.login_attempt_failed = True
-
-if st.session_state.get("login_attempt_failed", False):
-    st.error("❌ Incorrect username or password. Please try again.")
-
-st.markdown("</div>", unsafe_allow_html=True)
-st.stop()
-
-# File Upload Section
-encoded_logo = load_logo_b64()
-
-st.markdown(f"""
-    <style>
-        .upload-container {{
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            background: #ffffff;
-            border-radius: 12px;
-            text-align: center;
-        }}
-        .upload-title {{
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }}
-        .upload-sub {{
-            font-size: 16px;
-            color: #64748b;
-            margin-bottom: 1.5rem;
-        }}
-        .upload-sub span {{
-            color: #4361EE;
-            font-weight: 600;
-        }}
-        section[data-testid="stFileUploader"] {{
-            text-align: center;
-            padding-top: 0.5rem;
-        }}
-    </style>
-
-    <div class='upload-container'>
-        {"<img src='data:image/png;base64," + encoded_logo + "' style='width: 240px; margin-bottom: 10px;' />" if encoded_logo else ""}
-        <div class='upload-title'>Upload Your Data</div>
-        <div class='upload-sub'>Logged in as: <span>{st.session_state.username}</span></div>
-    </div>
-""", unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
-
-if uploaded_file is not None:
-    st.session_state.uploaded_file = uploaded_file
-    st.rerun()
-else:
-    st.stop()
-
-
-# Load Data Function
+# ====== Load Data ======
 @st.cache_data
 def load_data(file):
     return pd.read_excel(file)
 
-# Load Data after Upload
-if st.session_state.uploaded_file is not None:
-    df = load_data(st.session_state.uploaded_file)
+df = load_data(st.session_state.uploaded_file)
 
 # ====== Data Preparation ======
 df["purcheas_ind"] = df["purcheas_ind"].fillna(0)
@@ -256,7 +255,6 @@ with st.sidebar:
                 <img src="data:image/png;base64,{encoded}" style='width: 240px;' />
             </div>
         """, unsafe_allow_html=True)
-
 
 # Global CSS Styles
 st.markdown("""
@@ -1215,7 +1213,3 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-
-
-
