@@ -4,49 +4,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import beta
 from sklearn.ensemble import RandomForestClassifier
-import seaborn as sns
+import seaborn as sns  # optional (not used directly)
 import base64
 import streamlit.components.v1 as components
+import os
 
-
-
-# ====== Page Config ======
+# =========================
+# Page Configuration
+# =========================
 st.set_page_config(
     page_title="Marketing Insights Dashboard",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ====== Force Scroll to Top ======
-st.markdown("""
-    <script>
-        window.scrollTo(0, 0);
-    </script>
-""", unsafe_allow_html=True)
+# =========================
+# Force Scroll to Top (UX)
+# =========================
+st.markdown(
+    """
+    <script>window.scrollTo(0, 0);</script>
+    """,
+    unsafe_allow_html=True
+)
 
+# =========================
+# Sidebar Logo (relative path)
+# =========================
+def load_logo_base64(path: str) -> str:
+    try:
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except FileNotFoundError:
+        return ""
 
-# ====== Sidebar Logo ======
-with open("ResonLabs.png", "rb") as f:
-    encoded = base64.b64encode(f.read()).decode()
+encoded_logo = load_logo_base64("ResonLabs.png")
 
 with st.sidebar:
-    st.markdown(f"""
-        <div style='
-            text-align: center;
-            padding-top: 0px;
-            padding-bottom: 0px;
-            margin-bottom: 2px;
-        '>
-            <img src="data:image/png;base64,{encoded}" style='width: 240px;' />
-        </div>
-    """, unsafe_allow_html=True)
+    if encoded_logo:
+        st.markdown(
+            f"""
+            <div style='text-align:center;padding-top:0;margin-bottom:2px;'>
+                <img src="data:image/png;base64,{encoded_logo}" style='width:240px;' />
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    st.markdown("<div class='sidebar-header'>Navigation</div>", unsafe_allow_html=True)
 
-
-# ====== Apply Global CSS ======
+# =========================
+# Global CSS
+# =========================
 st.markdown("""
 <style>
-/* ========== GLOBAL STYLES ========== */
-/* Colors */
 :root {
     --primary-color: #4361EE;
     --secondary-color: #00C48C;
@@ -63,8 +73,6 @@ st.markdown("""
     --border-color: #e2e8f0;
     --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
-
-/* Text Styles */
 .dashboard-title {
     font-size: 2rem;
     font-weight: 700;
@@ -73,7 +81,6 @@ st.markdown("""
     font-family: 'Segoe UI', Arial, sans-serif;
     text-align: left;
 }
-
 .dashboard-subtitle {
     font-size: 1.1rem;
     color: var(--text-secondary);
@@ -81,7 +88,6 @@ st.markdown("""
     font-family: 'Segoe UI', Arial, sans-serif;
     text-align: left;
 }
-
 .section-title {
     font-size: 1.3rem;
     font-weight: 600;
@@ -91,8 +97,6 @@ st.markdown("""
     border-bottom: 1px solid var(--border-color);
     font-family: 'Segoe UI', Arial, sans-serif;
 }
-
-/* Container Styles */
 .dashboard-container {
     background-color: var(--light-color);
     border-radius: 12px;
@@ -100,21 +104,17 @@ st.markdown("""
     margin-bottom: 2rem;
     box-shadow: var(--box-shadow);
 }
-
 .chart-container {
     background-color: white;
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
-
-/* Metrics Display */
 .metric-container {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
 }
-
 .metric-card {
     background: white;
     border-radius: 12px;
@@ -125,39 +125,26 @@ st.markdown("""
     border-top: 4px solid var(--primary-color);
     transition: transform 0.2s ease;
 }
-
-.metric-card:hover {
-    transform: translateY(-5px);
-}
-
+.metric-card:hover { transform: translateY(-5px); }
 .metric-label {
     font-size: 19px;
     font-weight: 600;
     color: var(--text-muted);
     letter-spacing: 1px;
 }
-
 .metric-value {
     font-size: 32px;
     font-weight: 700;
     color: var(--text-primary);
     margin: 10px 0;
 }
-
-.metric-subtext {
-    font-size: 18px;
-    color: var(--text-light);
-}
-
-/* Card Color Variants */
+.metric-subtext { font-size: 18px; color: var(--text-light); }
 .card-primary { border-top: 4px solid var(--primary-color); }
 .card-secondary { border-top: 4px solid var(--secondary-color); }
 .card-accent-1 { border-top: 4px solid var(--accent-color-1); }
 .card-accent-2 { border-top: 4px solid var(--accent-color-2); }
 .card-accent-3 { border-top: 4px solid var(--accent-color-3); }
 .card-accent-4 { border-top: 4px solid var(--accent-color-4); }
-
-/* Insights Box */
 .insight-box {
     background-color: #ffffff; 
     border: 2px solid var(--text-primary); 
@@ -167,28 +154,9 @@ st.markdown("""
     box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
     margin-top: 24px;
 }
-
-.insight-title {
-    font-size: 21px; 
-    color: var(--text-primary); 
-    font-weight: 600; 
-    margin-bottom: 10px;
-}
-
-.insight-metric {
-    font-size: 28px; 
-    font-weight: 700; 
-    color: #1a202c; 
-    margin-bottom: 12px;
-}
-
-.insight-details {
-    font-size: 21px; 
-    color: #4a5568; 
-    line-height: 1.6;
-}
-
-/* Sidebar Navigation */
+.insight-title { font-size: 21px; color: var(--text-primary); font-weight: 600; margin-bottom: 10px; }
+.insight-metric { font-size: 28px; font-weight: 700; color: #1a202c; margin-bottom: 12px; }
+.insight-details { font-size: 21px; color: #4a5568; line-height: 1.6; }
 .sidebar-header {
     font-size: 1.8rem;
     font-weight: 700;
@@ -196,7 +164,6 @@ st.markdown("""
     color: var(--text-primary);
     margin-bottom: 20px;
 }
-
 .nav-button {
     display: block;
     width: 100%;
@@ -212,77 +179,152 @@ st.markdown("""
     text-decoration: none;
     transition: background-color 0.2s ease;
 }
-
-.nav-button:hover {
-    background-color: #e4e8f0;
-    cursor: pointer;
-}
-
-/* ========== CUSTOM: DataFrame Font Size ========== */
-div[data-testid="stDataFrame"] div[role="gridcell"] {{
+.nav-button:hover { background-color: #e4e8f0; cursor: pointer; }
+div[data-testid="stDataFrame"] div[role="gridcell"] {
     font-size: 20px !important;
     font-family: 'Segoe UI', Arial, sans-serif !important;
-}}
+}
 </style>
 """, unsafe_allow_html=True)
 
-# ====== Load Data ======
+# =========================
+# Data Loading (relative file)
+# =========================
 @st.cache_data
-def load_data():
-    return pd.read_excel("my_data.xlsx")
+def load_data(path: str = "my_data.xlsx") -> pd.DataFrame:
+    if not os.path.exists(path):
+        st.error(f"Data file not found: {path}")
+        return pd.DataFrame()
+    return pd.read_excel(path)
 
 df = load_data()
 
-# ====== Initialize Session State ======
-if "page" not in st.session_state:
-    st.session_state.page = "home"
+# =========================
+# Safe Preprocessing Helpers
+# =========================
+def ensure_column(df: pd.DataFrame, name: str, default):
+    if name not in df.columns:
+        df[name] = default
+    return df
 
-# ====== Sidebar Navigation ======
-with st.sidebar:
-    st.markdown("<div class='sidebar-header'>Navigation</div>", unsafe_allow_html=True)
+def to_int_binary(series: pd.Series) -> pd.Series:
+    return pd.to_numeric(series.fillna(0), errors="coerce").fillna(0).astype(int)
 
-    with st.form("home_form"):
-        submitted = st.form_submit_button("Home", use_container_width=True)
-        if submitted:
-            st.session_state.page = "home"
-            
+# ---- Minimal mandatory columns ----
+df = ensure_column(df, "purcheas_ind", 0)
+df["purcheas_ind"] = to_int_binary(df["purcheas_ind"])
 
-    with st.form("compare_form"):
-        submitted = st.form_submit_button("Compare Campaigns", use_container_width=True)
-        if submitted:
-            st.session_state.page = "compare_campaigns"
+df = ensure_column(df, "breach_found", 0)
+df["breach_found"] = to_int_binary(df["breach_found"])
 
-    with st.form("analyze_form"):
-        if "rerun_scroll" not in st.session_state:
-            st.session_state.rerun_scroll = False
-        submitted = st.form_submit_button("Analyze Single Campaign", use_container_width=True)
-        if submitted:
-            st.session_state.page = "single_campaign"
+df = ensure_column(df, "safety_level_quiz_score", 0)
+df["finished_quiz"] = (pd.to_numeric(df["safety_level_quiz_score"], errors="coerce").fillna(0) > 0).astype(int)
 
-# ====== Data Preprocessing ======
-df['finished_quiz'] = (df['safety_level_quiz_score'] > 0).astype(int)
+df = ensure_column(df, "Campaign number", np.nan)
+df["Campaign number"] = pd.to_numeric(df["Campaign number"], errors="coerce")
+df = df.dropna(subset=["Campaign number"])
+df["Campaign number"] = df["Campaign number"].astype(int)
 
-# ====== Configure Matplotlib Default Styling ======
+df = ensure_column(df, "campaign", "Unknown")
+df = ensure_column(df, "ruserid", -1)
+
+# ---- Optional raw columns used later; create if missing to avoid KeyErrors ----
+optional_raw = [
+    "use_the_internet_for", "do_on_social_media", "enter_personal_details_online",
+    "keep_your_passwords", "victim_of_online_scam", "nline_accounts_hacked",
+    "transaction_start", "revenue", "trial_ind", "plan"
+]
+for col in optional_raw:
+    df = ensure_column(df, col, 0)
+
+# ---- Split multi-answer columns into binary features if present ----
+columns_to_split = {
+    "use_the_internet_for": range(1, 7),
+    "do_on_social_media": range(1, 5),
+    "enter_personal_details_online": range(1, 7),
+}
+for column, value_range in columns_to_split.items():
+    if column in df.columns:
+        df[column] = df[column].astype(str)
+        for i in value_range:
+            df[f"{column}_{i}"] = df[column].apply(lambda x: 1 if str(i) in str(x).split(",") else 0)
+
+# ---- One-hot for single-answer columns if present ----
+columns_to_expand = {
+    "keep_your_passwords": [1, 2, 3, 4],
+    "victim_of_online_scam": [1, 2],
+    "nline_accounts_hacked": [1, 2],
+}
+for col, values in columns_to_expand.items():
+    if col in df.columns:
+        for val in values:
+            df[f"{col}_{val}"] = (pd.to_numeric(df[col], errors="coerce").fillna(0) == val).astype(int)
+
+# ---- Group flags (answered at least one) ----
+column_groups = {
+    "use_the_internet_for_answered": [f"use_the_internet_for_{i}" for i in range(1, 7)],
+    "do_on_social_media_answered": [f"do_on_social_media_{i}" for i in range(1, 5)],
+    "enter_personal_details_online_answered": [f"enter_personal_details_online_{i}" for i in range(1, 7)],
+    "keep_your_passwords_answered": [f"keep_your_passwords_{i}" for i in range(1, 4+1)],
+    "victim_of_online_scam_answered": [f"victim_of_online_scam_{i}" for i in range(1, 2+1)],
+    "nline_accounts_hacked_answered": [f"nline_accounts_hacked_{i}" for i in range(1, 2+1)],
+}
+for new_col, cols in column_groups.items():
+    existing = [c for c in cols if c in df.columns]
+    if existing:
+        df[new_col] = (df[existing].gt(0)).any(axis=1).astype(int)
+    else:
+        df[new_col] = 0
+
+# ---- Transaction start as int (if exists) ----
+if "transaction_start" in df.columns:
+    df["transaction_start"] = to_int_binary(df["transaction_start"])
+
+# ---- Revenue numeric helper ----
+df["_rev_num"] = pd.to_numeric(df.get("revenue", 0), errors="coerce").fillna(0)
+
+# =========================
+# Common Plot Styling
+# =========================
 def set_plot_style(fig, ax):
-    # Set common matplotlib styling
     for spine in ax.spines.values():
         spine.set_visible(False)
-    
     ax.spines['left'].set_visible(True)
     ax.spines['bottom'].set_visible(True)
     ax.spines['left'].set_color('#DDE1E4')
     ax.spines['bottom'].set_color('#DDE1E4')
-    
     ax.grid(axis='both', linestyle='--', alpha=0.15)
     ax.tick_params(axis='both', labelsize=8, colors="#333")
-    
     fig.patch.set_facecolor('white')
     ax.set_facecolor('white')
     ax.set_axisbelow(True)
-    
     return fig, ax
 
-# ====== ============Home Page ======================================================================================================================================================================================
+# =========================
+# Session State: Navigation
+# =========================
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+
+with st.sidebar:
+    with st.form("home_form"):
+        if st.form_submit_button("Home", use_container_width=True):
+            st.session_state.page = "home"
+    with st.form("compare_form"):
+        if st.form_submit_button("Campaign Comparison", use_container_width=True):
+            st.session_state.page = "compare_campaigns"
+    with st.form("analyze_form"):
+        if "rerun_scroll" not in st.session_state:
+            st.session_state.rerun_scroll = False
+        if st.form_submit_button("Single Campaign Analysis", use_container_width=True):
+            st.session_state.page = "single_campaign"
+    with st.form("insights_form"):
+        if st.form_submit_button("Portfolio Analytics", use_container_width=True):
+            st.session_state.page = "campaign_insights"
+
+# =========================
+# HOME
+# =========================
 if st.session_state.page == "home":
     st.markdown("""
     <div class="dashboard-container">
@@ -326,12 +368,12 @@ if st.session_state.page == "home":
 
         campaign_summary = (
             df.groupby(['campaign', 'Campaign number'])
-            .agg(Users=('ruserid', 'nunique'), Purchases=('purcheas_ind', 'sum'))
-            .reset_index()
+              .agg(Users=('ruserid', 'nunique'),
+                   Purchases=('purcheas_ind', 'sum'))
+              .reset_index()
         )
         campaign_summary['Conversion Rate'] = (campaign_summary['Purchases'] / campaign_summary['Users']) * 100
         campaign_summary['Conversion Rate'] = campaign_summary['Conversion Rate'].round(2).astype(str) + '%'
-
         campaign_summary = campaign_summary.sort_values(by='Campaign number')
 
         st.data_editor(
@@ -341,17 +383,18 @@ if st.session_state.page == "home":
             disabled=True
         )
 
-# ====== Compare Campaigns Page ==============================================================================================================================================================================
+# =========================
+# CAMPAIGN COMPARISON
+# =========================
 elif st.session_state.page == "compare_campaigns":
     st.markdown("""
     <div class="dashboard-container">
-        <div class="dashboard-title">Compare Campaigns</div>
+        <div class="dashboard-title">Campaign Comparison</div>
         <div class="dashboard-subtitle">Compare two campaigns and analyze performance uplift</div>
     </div>
     """, unsafe_allow_html=True)
 
     if not df.empty:
-        # Prepare campaign data
         campaign_df = (
             df[['campaign', 'Campaign number']]
             .drop_duplicates()
@@ -359,25 +402,21 @@ elif st.session_state.page == "compare_campaigns":
             .rename(columns={'campaign': 'Campaign Name', 'Campaign number': 'Campaign Number'})
             .reset_index(drop=True)
         )
-        campaign_df["Campaign Number"] = campaign_df["Campaign Number"].astype(int)
-        camp_options = sorted(campaign_df["Campaign Number"].unique())
-        camp_options = [str(c) for c in camp_options]
+        campaign_df["Campaign Number"] = pd.to_numeric(campaign_df["Campaign Number"], errors="coerce").fillna(0).astype(int)
+        camp_options = [str(c) for c in sorted(campaign_df["Campaign Number"].unique())]
 
-        # Campaign selection
         col_select = st.columns(2)
         with col_select[0]:
             camp_A_number = st.selectbox("Select Campaign A", camp_options)
         with col_select[1]:
             camp_B_number = st.selectbox("Select Campaign B", [c for c in camp_options if c != camp_A_number])
 
-        # Get campaign names and filter data
         camp_A_name = campaign_df[campaign_df["Campaign Number"].astype(str) == camp_A_number]["Campaign Name"].values[0]
         camp_B_name = campaign_df[campaign_df["Campaign Number"].astype(str) == camp_B_number]["Campaign Name"].values[0]
 
         df_A = df[df['campaign'] == camp_A_name]
         df_B = df[df['campaign'] == camp_B_name]
 
-        # Calculate metrics
         total_users_A = df_A['ruserid'].nunique()
         total_purchases_A = df_A['purcheas_ind'].sum()
         total_users_B = df_B['ruserid'].nunique()
@@ -387,12 +426,10 @@ elif st.session_state.page == "compare_campaigns":
         conversion_B = (total_purchases_B / total_users_B) * 100 if total_users_B > 0 else 0
         uplift = conversion_B - conversion_A
 
-        # Calculate Bayesian probability
-        samples_A = np.random.beta(total_purchases_A + 1, total_users_A - total_purchases_A + 1, 5000)
-        samples_B = np.random.beta(total_purchases_B + 1, total_users_B - total_purchases_B + 1, 5000)
+        samples_A = np.random.beta(total_purchases_A + 1, max(total_users_A - total_purchases_A, 0) + 1, 5000)
+        samples_B = np.random.beta(total_purchases_B + 1, max(total_users_B - total_purchases_B, 0) + 1, 5000)
         prob_B_better = np.mean(samples_B > samples_A) * 100
 
-        # Display metrics
         st.markdown("<div class='section-title'>Campaign Performance Summary</div>", unsafe_allow_html=True)
 
         st.markdown(f"""
@@ -415,448 +452,539 @@ elif st.session_state.page == "compare_campaigns":
         </div>
         """, unsafe_allow_html=True)
 
-        # Layout for charts and recommendation
         layout_cols = st.columns(2)
-
-        # Left column: Probability distributions
         with layout_cols[0]:
             st.markdown("<div class='section-title'>Probability Distributions</div>", unsafe_allow_html=True)
-            
             fig, ax = plt.subplots(figsize=(7, 4.5))
-            
             x = np.linspace(0, max(samples_A.max(), samples_B.max()) * 1.1, 1000)
-            ax.plot(x, beta.pdf(x, total_purchases_A + 1, total_users_A - total_purchases_A + 1),
+            ax.plot(x, beta.pdf(x, total_purchases_A + 1, max(total_users_A - total_purchases_A, 0) + 1),
                     label=f"Campaign {camp_A_number}", color="#4F46E5", linewidth=2)
-            ax.plot(x, beta.pdf(x, total_purchases_B + 1, total_users_B - total_purchases_B + 1),
+            ax.plot(x, beta.pdf(x, total_purchases_B + 1, max(total_users_B - total_purchases_B, 0) + 1),
                     label=f"Campaign {camp_B_number}", color="#00BFFF", linewidth=2)
-            
             ax.set_xlabel('Conversion Rate')
             ax.set_ylabel('Density')
             ax.set_title('Posterior Probability Distributions')
             ax.legend(frameon=False)
-            
             fig, ax = set_plot_style(fig, ax)
             plt.tight_layout()
             st.pyplot(fig)
 
-        # Right column: Campaign recommendation
         with layout_cols[1]:
             winner = f"Campaign {camp_B_number}" if prob_B_better > 50 else f"Campaign {camp_A_number}"
             certainty = max(prob_B_better, 100 - prob_B_better)
-
             st.markdown("<div class='section-title'>Campaign Recommendation</div>", unsafe_allow_html=True)
             st.markdown(f"""
                 <div class="insight-box">
                     <div class="insight-title">Campaign Performance Recommendation</div>
                     <div class="insight-metric">{winner}</div>
-                    <div class="insight-details">Campaign <strong>{winner}</strong> has a <strong>{certainty:.2f}%</strong> probability of achieving better conversion results.</div>
+                    <div class="insight-details">Campaign <strong>{winner.split()[-1]}</strong> has a <strong>{certainty:.2f}%</strong> probability of achieving better conversion results.</div>
                 </div>
             """, unsafe_allow_html=True)
 
-# ====== Analyze Single Campaign Page ======================================================================================================================================================================================
+# =========================
+# SINGLE CAMPAIGN ANALYSIS
+# =========================
 elif st.session_state.page == "single_campaign":
-    components.html(
-        """
-        <script>
-            window.parent.scrollTo(0, 0);
-        </script>
-        """,
-        height=0
-    )
+    components.html("<script>window.parent.scrollTo(0,0);</script>", height=0)
 
-    with st.container():
-        st.markdown("""
-<div class="dashboard-container">
-    <div class="dashboard-title">Campaign Analysis</div>
-    <div class="dashboard-subtitle">Deep dive into performance metrics and user behavior</div>
-</div>
-""", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="dashboard-container">
+        <div class="dashboard-title">Single Campaign Analysis</div>
+        <div class="dashboard-subtitle">Deep dive into performance metrics and user behavior</div>
+    </div>
+    """, unsafe_allow_html=True)
 
+    if not df.empty:
+        st.markdown("<div class='section-title'>Select Campaign</div>", unsafe_allow_html=True)
 
-        if not df.empty:
-            # ====== Select Campaign ======
-            st.markdown("<div class='section-title'>Select Campaign</div>", unsafe_allow_html=True)
+        campaign_df = (
+            df[['campaign', 'Campaign number']]
+            .drop_duplicates()
+            .dropna()
+            .rename(columns={'campaign': 'Campaign Name', 'Campaign number': 'Campaign Number'})
+            .reset_index(drop=True)
+        )
+        campaign_df['Campaign Number'] = pd.to_numeric(campaign_df['Campaign Number'], errors='coerce').fillna(0).astype(int)
+        campaign_df = campaign_df.sort_values('Campaign Number').reset_index(drop=True)
+        camp_options = campaign_df["Campaign Number"].astype(str).tolist()
 
-            campaign_df = (
-                df[['campaign', 'Campaign number']]
-                .drop_duplicates()
-                .dropna()
-                .rename(columns={'campaign': 'Campaign Name', 'Campaign number': 'Campaign Number'})
-                .reset_index(drop=True)
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            selected_camp_number = st.selectbox("", camp_options, label_visibility="collapsed")
+
+        selected_camp_name = campaign_df[campaign_df["Campaign Number"].astype(str) == selected_camp_number]["Campaign Name"].values[0]
+        df_camp = df[df['campaign'] == selected_camp_name]
+
+        total_users = df_camp['ruserid'].nunique()
+        finished_quiz = df_camp['finished_quiz'].sum()
+        transaction_start = df_camp['transaction_start'].sum() if 'transaction_start' in df_camp.columns else 0
+        purchases = df_camp['purcheas_ind'].sum()
+        conversion_rate = (purchases / total_users) * 100 if total_users > 0 else 0
+
+        st.markdown("<div class='section-title'>Key Performance Metrics</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="metric-container">
+            <div class="metric-card card-accent-3">
+                <div class="metric-label">Quiz Completed</div>
+                <div class="metric-value">{int(finished_quiz):,}</div>
+                <div class="metric-subtext">Completed Safety Quiz</div>
+            </div>
+            <div class="metric-card card-accent-4">
+                <div class="metric-label">Transaction Started</div>
+                <div class="metric-value">{int(transaction_start):,}</div>
+                <div class="metric-subtext">Checkout Initiated</div>
+            </div>
+            <div class="metric-card card-accent-1">
+                <div class="metric-label">Purchases</div>
+                <div class="metric-value">{int(purchases):,}</div>
+                <div class="metric-subtext">Successful Purchases</div>
+            </div>
+            <div class="metric-card card-secondary">
+                <div class="metric-label">Conversion Rate</div>
+                <div class="metric-value">{conversion_rate:.2f}%</div>
+                <div class="metric-subtext">Visitor-to-Buyer Rate</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_titles = st.columns([3, 2])
+        with col_titles[0]:
+            st.markdown("<div class='section-title'>User Journey Analysis</div>", unsafe_allow_html=True)
+        with col_titles[1]:
+            st.markdown("<div class='section-title'>Journey Insights</div>", unsafe_allow_html=True)
+
+        journey_col1, journey_col2 = st.columns([3, 2])
+
+        with journey_col1:
+            st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+            funnel_labels = ["Visitors", "Finished\nQuiz", "Started\nTransaction", "Purchases"]
+            funnel_values = [total_users, int(finished_quiz), int(transaction_start), int(purchases)]
+            fig, ax = plt.subplots(figsize=(7, 4.0))
+            colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(funnel_labels)))
+            ax.barh(funnel_labels, funnel_values, color=colors, height=0.8)
+            ax.set_xlabel("Users", fontsize=10, color="#555", labelpad=4)
+            fig, ax = set_plot_style(fig, ax)
+            for i, v in enumerate(funnel_values):
+                ax.text(v + max(funnel_values) * 0.01, i, f"{int(v):,}", va="center", fontsize=9, color="#555")
+            ax.invert_yaxis()
+            plt.tight_layout()
+            st.pyplot(fig)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with journey_col2:
+            quiz_rate = (finished_quiz / total_users * 100) if total_users > 0 else 0
+            purchase_rate = (purchases / transaction_start * 100) if transaction_start > 0 else 0
+            main_dropoff = 100 - quiz_rate if total_users > 0 else 0
+            st.markdown(f"""
+                <div class="insight-box">
+                    <div class="insight-title">User Journey Overview</div>
+                    <div class="insight-metric">{quiz_rate:.1f}% Quiz Completion</div>
+                    <div class="insight-details">
+                        Purchase Rate After Transaction Start: <strong>{purchase_rate:.1f}%</strong><br>
+                        Main Drop-off Before Quiz: <strong>{main_dropoff:.1f}%</strong>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<div class='section-title'>Feature Importance Analysis</div>", unsafe_allow_html=True)
+        tabs = st.tabs(["General Features", "Specific Answers"])
+
+        # ---- General Features
+        with tabs[0]:
+            features_list = [
+                "use_the_internet_for_answered", "do_on_social_media_answered",
+                "enter_personal_details_online_answered", "keep_your_passwords_answered",
+                "victim_of_online_scam_answered", "nline_accounts_hacked_answered",
+                "safety_level_quiz_score", "breach_found"
+            ]
+            existing_features = [c for c in features_list if c in df_camp.columns]
+            model_df = df_camp[existing_features + ["purcheas_ind"]].dropna() if existing_features else pd.DataFrame()
+
+            if not model_df.empty and model_df.shape[0] > 30 and model_df["purcheas_ind"].nunique() > 1:
+                col_main = st.columns([3, 2])
+                with col_main[0]:
+                    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+                    X = model_df.drop("purcheas_ind", axis=1)
+                    y = model_df["purcheas_ind"]
+                    model = RandomForestClassifier(n_estimators=100, random_state=42)
+                    model.fit(X, y)
+                    importances = pd.DataFrame({
+                        "Feature": X.columns,
+                        "Importance": model.feature_importances_
+                    }).sort_values(by="Importance", ascending=False)
+
+                    feature_display_names = {
+                        "use_the_internet_for_answered": "Internet Usage",
+                        "do_on_social_media_answered": "Social Media Activity",
+                        "enter_personal_details_online_answered": "Personal Details Sharing",
+                        "keep_your_passwords_answered": "Password Management",
+                        "victim_of_online_scam_answered": "Past Scam Victim",
+                        "nline_accounts_hacked_answered": "Account Hacking History",
+                        "safety_level_quiz_score": "Safety Quiz Score",
+                        "breach_found": "Security Breach"
+                    }
+                    importances["Display"] = importances["Feature"].map(lambda x: feature_display_names.get(x, x))
+
+                    fig, ax = plt.subplots(figsize=(7, 4.5))
+                    colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(importances)))
+                    ax.barh(importances["Display"], importances["Importance"], color=colors)
+                    ax.set_xlabel("Importance Score", fontsize=10, color="#555")
+                    fig, ax = set_plot_style(fig, ax)
+                    for i, v in enumerate(importances["Importance"]):
+                        ax.text(v + 0.005, i, f"{v:.3f}", va="center", fontsize=9, color="#555")
+                    ax.invert_yaxis()
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                with col_main[1]:
+                    top_feature = importances.iloc[0]["Display"]
+                    st.markdown(f"""
+                        <div class="insight-box">
+                            <div class="insight-title">Top Feature Insight</div>
+                            <div class="insight-details">
+                                <strong>Strongest Predictor:</strong><br>
+                                {top_feature} is the strongest indicator for purchase.
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Not enough data (>= 30 rows & both classes present) for General Features analysis.")
+
+        # ---- Specific Answers
+        with tabs[1]:
+            prefixes = [
+                "use_the_internet_for_", "do_on_social_media_",
+                "enter_personal_details_online_", "keep_your_passwords_",
+                "victim_of_online_scam_", "nline_accounts_hacked_"
+            ]
+            option_columns = [col for col in df.columns if any(col.startswith(p) for p in prefixes)]
+            option_columns = [c for c in option_columns if c in df_camp.columns]
+            model_df_detail = df_camp[option_columns + ["purcheas_ind"]].dropna() if option_columns else pd.DataFrame()
+
+            if not model_df_detail.empty and model_df_detail.shape[0] > 30 and model_df_detail["purcheas_ind"].nunique() > 1:
+                col_main = st.columns([3, 2])
+                with col_main[0]:
+                    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+                    X_detail = model_df_detail.drop("purcheas_ind", axis=1)
+                    y_detail = model_df_detail["purcheas_ind"]
+                    model_detail = RandomForestClassifier(n_estimators=100, random_state=42)
+                    model_detail.fit(X_detail, y_detail)
+                    importances_detail = pd.DataFrame({
+                        "Feature": X_detail.columns,
+                        "Importance": model_detail.feature_importances_
+                    }).sort_values(by="Importance", ascending=False).head(10)
+
+                    answer_mapping = {
+                        "use_the_internet_for_1": "Social media",
+                        "use_the_internet_for_2": "Banking & Finance",
+                        "use_the_internet_for_3": "Online shopping",
+                        "use_the_internet_for_4": "Gaming",
+                        "use_the_internet_for_5": "Streaming",
+                        "use_the_internet_for_6": "Research & Education",
+                        "do_on_social_media_1": "News/Events",
+                        "do_on_social_media_2": "Post Photos",
+                        "do_on_social_media_3": "Entertainment",
+                        "do_on_social_media_4": "Brand Research",
+                        "enter_personal_details_online_1": "Credit Card",
+                        "enter_personal_details_online_2": "Phone Number",
+                        "enter_personal_details_online_3": "Passport",
+                        "enter_personal_details_online_4": "Date of Birth",
+                        "enter_personal_details_online_5": "Address",
+                        "enter_personal_details_online_6": "SSN",
+                        "keep_your_passwords_1": "Notepad",
+                        "keep_your_passwords_2": "Computer",
+                        "keep_your_passwords_3": "Password Manager",
+                        "keep_your_passwords_4": "Remember Mentally",
+                        "victim_of_online_scam_1": "No",
+                        "victim_of_online_scam_2": "Yes",
+                        "nline_accounts_hacked_1": "No",
+                        "nline_accounts_hacked_2": "Yes",
+                    }
+                    question_mapping = {
+                        "use_the_internet_for_": "What do you use the internet for?",
+                        "do_on_social_media_": "What do you do on social media?",
+                        "enter_personal_details_online_": "Do you enter personal details online?",
+                        "keep_your_passwords_": "How do you keep your passwords?",
+                        "victim_of_online_scam_": "Victim of online scam?",
+                        "nline_accounts_hacked_": "Account hacked before?"
+                    }
+                    importances_detail["Display"] = importances_detail["Feature"].map(lambda x: answer_mapping.get(x, x))
+                    importances_detail["Question"] = importances_detail["Feature"].apply(
+                        lambda x: next((question_mapping[p] for p in prefixes if x.startswith(p)), "")
+                    )
+
+                    fig, ax = plt.subplots(figsize=(7, 4.5))
+                    colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(importances_detail)))
+                    display_labels = importances_detail["Display"].fillna(importances_detail["Feature"])
+                    ax.barh(display_labels, importances_detail["Importance"], color=colors)
+                    ax.set_xlabel("Importance Score", fontsize=10, color="#555")
+                    fig, ax = set_plot_style(fig, ax)
+                    for i, v in enumerate(importances_detail["Importance"]):
+                        ax.text(v + 0.005, i, f"{v:.3f}", va="center", fontsize=9, color="#555")
+                    ax.invert_yaxis()
+                    plt.tight_layout()
+                    st.pyplot(fig)
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                with col_main[1]:
+                    top_answer = importances_detail.iloc[0]["Display"]
+                    related_question = importances_detail.iloc[0]["Question"]
+                    st.markdown(f"""
+                        <div class="insight-box">
+                            <div class="insight-title">Top Answer Insight</div>
+                            <div class="insight-details">
+                                <strong>Most Influential Answer:</strong><br>
+                                {top_answer}<br><br>
+                                <strong>Related Question:</strong><br>
+                                "{related_question}"
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("Not enough data (>= 30 rows & both classes present) for Specific Answers analysis.")
+
+        # ---- Conversion Rate by Campaign
+        st.markdown("<div class='section-title'>Conversion Rate by Campaign</div>", unsafe_allow_html=True)
+        conv_rate_cols = st.columns([3, 2])
+
+        with conv_rate_cols[0]:
+            all_campaigns = (
+                df.groupby('Campaign number')
+                  .agg(num_exposed=('ruserid', 'count'),
+                       num_purchases=('purcheas_ind', 'sum'))
+                  .reset_index()
             )
-            campaign_df['Campaign Number'] = pd.to_numeric(campaign_df['Campaign Number'], errors='coerce')
-            campaign_df['Campaign Number'] = campaign_df['Campaign Number'].astype(int)
-            campaign_df = campaign_df.sort_values('Campaign Number').reset_index(drop=True)
-            camp_options = campaign_df["Campaign Number"].astype(str).tolist()
+            all_campaigns['conversion_rate'] = (all_campaigns['num_purchases'] / all_campaigns['num_exposed']) * 100
+            all_campaigns = all_campaigns[all_campaigns['num_exposed'] > 0].sort_values(by='conversion_rate', ascending=True)
+            filtered_campaign = int(selected_camp_number)
 
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                selected_camp_number = st.selectbox("", camp_options, label_visibility="collapsed")
+            st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
+            fig, ax = plt.subplots(figsize=(7, 4.5))
+            colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(all_campaigns)))
+            bars = ax.bar(
+                all_campaigns['Campaign number'].astype(str),
+                all_campaigns['conversion_rate'],
+                color=colors,
+                edgecolor="black",
+                width=0.5
+            )
+            for i, bar in enumerate(bars):
+                if all_campaigns.iloc[i]['Campaign number'] == filtered_campaign:
+                    bar.set_color('#4361EE')
 
-            selected_camp_name = campaign_df[campaign_df["Campaign Number"].astype(str) == selected_camp_number]["Campaign Name"].values[0]
-            df_camp = df[df['campaign'] == selected_camp_name]
+            ax.set_xlabel("")
+            ax.set_ylabel("Conversion Rate (%)", fontsize=10, color="#555")
+            ax.grid(axis='y', linestyle='--', alpha=0.3)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_color('#DDE1E4')
+            ax.spines['bottom'].set_color('#DDE1E4')
+            ax.tick_params(axis='y', labelsize=8)
+            ax.tick_params(axis='x', labelsize=8, rotation=45)
 
-            # ====== Calculate Metrics ======
-            total_users = df_camp['ruserid'].nunique()
-            finished_quiz = df_camp['finished_quiz'].sum()
-            transaction_start = df_camp['transaction_start'].sum() if 'transaction_start' in df_camp.columns else 0
-            purchases = df_camp['purcheas_ind'].sum()
-            conversion_rate = (purchases / total_users) * 100 if total_users > 0 else 0
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2, height, f"{height:.1f}%", ha='center', va='bottom', fontsize=9, color="#555")
 
-            # ====== Display Key Metrics ======
-            st.markdown("<div class='section-title'>Key Performance Metrics</div>", unsafe_allow_html=True)
+            fig.patch.set_facecolor('white')
+            ax.set_facecolor('white')
+            ax.set_axisbelow(True)
+            plt.tight_layout()
+            st.pyplot(fig)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with conv_rate_cols[1]:
+            selected_rate = all_campaigns[all_campaigns['Campaign number'] == filtered_campaign]['conversion_rate'].values[0]
+            campaign_rank = all_campaigns.reset_index().index[all_campaigns['Campaign number'] == filtered_campaign].tolist()[0] + 1
+            total_campaigns = all_campaigns.shape[0]
+            st.markdown(f"""
+                <div class="insight-box">
+                    <div class="insight-title">Conversion Rate Insight</div>
+                    <div class="insight-metric">{selected_rate:.1f}%</div>
+                    <div class="insight-details">
+                        Campaign <strong>{filtered_campaign}</strong> ranks <strong>{campaign_rank} out of {total_campaigns}</strong> campaigns in conversion performance.
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+# =========================
+# PORTFOLIO ANALYTICS
+# =========================
+elif st.session_state.page == "campaign_insights":
+    st.markdown("""
+    <div class="dashboard-container">
+        <div class="dashboard-title">Portfolio Analytics</div>
+        <div class="dashboard-subtitle">Group-level insights on paying user behavior and revenue</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div class='section-title'>Portfolio Budget Analysis</div>", unsafe_allow_html=True)
+    st.markdown("*Enter campaign budgets to compute CAC, ROI & a portfolio summary.*")
+
+    if not df.empty:
+        payers = (
+            df[df['_rev_num'] > 0]
+            .groupby(['campaign', 'Campaign number'])['ruserid']
+            .nunique()
+            .rename('Payers')
+        )
+
+        base = (
+            df.groupby(['campaign', 'Campaign number'])
+              .agg(
+                  Users=('ruserid', 'nunique'),
+                  Purchases=('purcheas_ind', 'sum'),
+                  Revenue=('_rev_num', lambda x: x[x > 0].sum())
+              )
+              .reset_index()
+        )
+
+        campaign_summary = base.merge(payers.reset_index(), on=['campaign', 'Campaign number'], how='left')
+        campaign_summary['Payers'] = campaign_summary['Payers'].fillna(0).astype(int)
+        campaign_summary['Campaign number'] = pd.to_numeric(campaign_summary['Campaign number'], errors='coerce').fillna(0).astype(int)
+        campaign_summary = campaign_summary.sort_values('Campaign number').reset_index(drop=True)
+
+        campaign_summary['LTV'] = campaign_summary.apply(
+            lambda r: (r['Revenue'] / r['Payers']) if r['Payers'] > 0 else np.nan, axis=1
+        )
+
+        if 'pba_budget_data' not in st.session_state:
+            st.session_state.pba_budget_data = {}
+
+        with st.form("pba_budget_input_form"):
+            st.markdown("#### Budgets by Campaign")
+            cols = st.columns(3)
+            budget_inputs = {}
+            for idx, row in campaign_summary.iterrows():
+                col_idx = idx % 3
+                with cols[col_idx]:
+                    cnum = int(row['Campaign number'])
+                    cname = row['campaign']
+                    curr = float(st.session_state.pba_budget_data.get(cnum, 0.0))
+                    budget_inputs[cnum] = st.number_input(
+                        f"Campaign {cnum}",
+                        min_value=0.0, value=curr, step=100.0,
+                        key=f"pba_budget_{cnum}",
+                        help=f"Budget spent on {cname}"
+                    )
+            if st.form_submit_button("Calculate Metrics", use_container_width=True):
+                st.session_state.pba_budget_data = budget_inputs
+                st.rerun()
+
+        if st.session_state.pba_budget_data and any(v > 0 for v in st.session_state.pba_budget_data.values()):
+            rows = []
+            total_budget = 0.0
+            total_revenue = 0.0
+            total_payers = 0
+
+            for _, r in campaign_summary.iterrows():
+                cnum = int(r['Campaign number'])
+                budget = float(st.session_state.pba_budget_data.get(cnum, 0.0))
+                if budget <= 0:
+                    continue
+
+                users = int(r['Users'])
+                payers_cnt = int(r['Payers'])
+                revenue = float(r['Revenue'])
+                ltv_used = float(r['LTV']) if not np.isnan(r['LTV']) else 0.0
+
+                cac = (budget / payers_cnt) if payers_cnt > 0 else float('inf')
+                roi = ((revenue - budget) / budget * 100) if budget > 0 else 0.0
+                ltv_cac = (ltv_used / cac) if (cac not in (0.0, float('inf')) and ltv_used > 0) else 0.0
+
+                if payers_cnt == 0:
+                    status = "🔴 No Payers"
+                elif ltv_used <= 0 or cac in (0.0, float('inf')) or ltv_cac <= 0:
+                    status = "⚪ LTV unavailable"
+                elif ltv_cac >= 3.0:
+                    status = "🟢 Excellent"
+                elif ltv_cac >= 1.5:
+                    status = "🟡 Good"
+                elif ltv_cac >= 1.0:
+                    status = "🟠 Break-even"
+                else:
+                    status = "🔴 Losing Money"
+
+                if payers_cnt == 0:
+                    recommendation = "No paying users - review targeting."
+                elif roi < 0:
+                    recommendation = "Consider reducing budget or changing strategy."
+                elif ltv_cac >= 3.0:
+                    recommendation = "Excellent efficiency - consider scaling this campaign."
+                elif ltv_cac >= 1.5:
+                    recommendation = "Good profitability - consider increasing budget."
+                elif ltv_cac >= 1.0:
+                    recommendation = "At break-even - optimize for better ROI."
+                else:
+                    recommendation = "Monitor performance closely and adjust strategy."
+
+                rows.append({
+                    "Campaign": f"Campaign {cnum}",
+                    "Budget": f"${budget:,.0f}",
+                    "Users": f"{users:,}",
+                    "Payers": f"{payers_cnt:,}",
+                    "Revenue": f"${revenue:,.0f}",
+                    "LTV": "N/A" if ltv_used <= 0 else f"${ltv_used:,.0f}",
+                    "CAC": "N/A" if cac == float('inf') else f"${cac:.0f}",
+                    "LTV/CAC": "N/A" if ltv_cac <= 0 else f"{ltv_cac:.1f}",
+                    "ROI": f"{roi:.1f}%",
+                    "Status": status,
+                    "Recommendation": recommendation,
+                    "_payers": payers_cnt,
+                    "_ltv": ltv_used,
+                    "_cac": cac
+                })
+
+                total_budget += budget
+                total_revenue += revenue
+                total_payers += payers_cnt
+
+            if rows:
+                st.markdown("<div class='section-title'>Calculated Metrics</div>", unsafe_allow_html=True)
+                df_show = pd.DataFrame(rows).drop(columns=["_payers", "_ltv", "_cac"])
+                st.dataframe(df_show, use_container_width=True, hide_index=True)
+
+            blended_cac = (total_budget / total_payers) if total_payers > 0 else float('inf')
+            blended_ltv = (total_revenue / total_payers) if total_payers > 0 else np.nan
+            blended_ratio = (
+                blended_ltv / blended_cac
+                if (blended_cac not in (0.0, float('inf')) and not np.isnan(blended_ltv))
+                else np.nan
+            )
+            portfolio_roi = ((total_revenue - total_budget) / total_budget * 100) if total_budget > 0 else 0.0
+
+            profitable_cnt = sum(
+                1 for r in rows
+                if (r["_payers"] > 0 and r["_ltv"] > 0 and r["_cac"] <= r["_ltv"])
+            )
 
             st.markdown(f"""
             <div class="metric-container">
-                <div class="metric-card card-accent-3">
-                    <div class="metric-label">Finished Quiz</div>
-                    <div class="metric-value">{int(finished_quiz):,}</div>
-                    <div class="metric-subtext">Completed Safety Quiz</div>
-                </div>
-                <div class="metric-card card-accent-4">
-                    <div class="metric-label">Started Transaction</div>
-                    <div class="metric-value">{int(transaction_start):,}</div>
-                    <div class="metric-subtext">Checkout Started</div>
-                </div>
-                <div class="metric-card card-accent-1">
-                    <div class="metric-label">Purchases</div>
-                    <div class="metric-value">{int(purchases):,}</div>
-                    <div class="metric-subtext">Successful Purchases</div>
+                <div class="metric-card card-primary">
+                    <div class="metric-label">TOTAL BUDGET</div>
+                    <div class="metric-value">${total_budget:,.0f}</div>
+                    <div class="metric-subtext">Across Entered Campaigns</div>
                 </div>
                 <div class="metric-card card-secondary">
-                    <div class="metric-label">Conversion Rate</div>
-                    <div class="metric-value">{conversion_rate:.2f}%</div>
-                    <div class="metric-subtext">Visitor-to-Buyer Rate</div>
+                    <div class="metric-label">BLENDED CAC</div>
+                    <div class="metric-value">{"N/A" if blended_cac==float('inf') else f"${blended_cac:.0f}"}</div>
+                    <div class="metric-subtext">Budget / Payers</div>
+                </div>
+                <div class="metric-card card-accent-3">
+                    <div class="metric-label">BLENDED LTV/CAC</div>
+                    <div class="metric-value">{'N/A' if np.isnan(blended_ratio) else f'{blended_ratio:.1f}'}</div>
+                    <div class="metric-subtext">LTV Ratio</div>
+                </div>
+                <div class="metric-card card-accent-1">
+                    <div class="metric-label">PORTFOLIO ROI</div>
+                    <div class="metric-value">{portfolio_roi:+.1f}%</div>
+                    <div class="metric-subtext">Revenue vs Budget</div>
+                </div>
+                <div class="metric-card card-accent-2">
+                    <div class="metric-label">PROFITABLE CAMPAIGNS</div>
+                    <div class="metric-value">{profitable_cnt}/{len(rows)}</div>
+                    <div class="metric-subtext">CAC ≤ LTV</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-            #====== User Journey Analysis ======
-            # Section titles
-            col_titles = st.columns([3, 2])
-            with col_titles[0]:
-                st.markdown("<div class='section-title'>User Journey Analysis</div>", unsafe_allow_html=True)
-            with col_titles[1]:
-                st.markdown("<div class='section-title'>Journey Insights</div>", unsafe_allow_html=True)
-
-            # Main content: Graph + Summary Box
-            journey_col1, journey_col2 = st.columns([3, 2])
-
-            # Left column: Funnel graph
-            with journey_col1:
-                st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-
-                funnel_labels = ["Visitors", "Finished\nQuiz", "Started\nTransaction", "Purchases"]
-                funnel_values = [total_users, int(finished_quiz), int(transaction_start), int(purchases)]
-
-                fig, ax = plt.subplots(figsize=(7, 4.0))  # גובה מותאם
-                colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(funnel_labels)))
-
-                bar_container = ax.barh(
-                    funnel_labels,
-                    funnel_values,
-                    color=colors,
-                    height=0.8  # יותר עבה – פחות רווחים
-                )
-
-                ax.set_xlabel("Users", fontsize=10, color="#555", labelpad=4)
-                fig, ax = set_plot_style(fig, ax)
-
-                for i, v in enumerate(funnel_values):
-                    ax.text(v + max(funnel_values) * 0.01, i, f"{int(v):,}", va="center", fontsize=9, color="#555")
-
-                ax.invert_yaxis()
-                plt.tight_layout()
-                st.pyplot(fig)
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
-
-            # Right column: Insight box
-            with journey_col2:
-                quiz_rate = (finished_quiz / total_users * 100) if total_users > 0 else 0
-                purchase_rate = (purchases / transaction_start * 100) if transaction_start > 0 else 0
-                main_dropoff = 100 - quiz_rate if total_users > 0 else 0
-
-                st.markdown(f"""
-                    <div class="insight-box">
-                        <div class="insight-title">User Journey Overview</div>
-                        <div class="insight-metric">{quiz_rate:.1f}% Quiz Completion</div>
-                        <div class="insight-details">
-                            Purchase Rate After Transaction Start: <strong>{purchase_rate:.1f}%</strong><br>
-                            Main Drop-off Before Quiz: <strong>{main_dropoff:.1f}%</strong>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-            # ====== Feature Importance Analysis ======
-            st.markdown("<div class='section-title'>Feature Importance Analysis</div>", unsafe_allow_html=True)
-
-            # טאבים בלי כותרת insights
-            tabs = st.tabs(["General Features", "Specific Answers"])
-
-
-            # GENERAL FEATURES TAB
-            with tabs[0]:
-                insight_text = ""
-                features_list = [
-                    "use_the_internet_for_answered", "do_on_social_media_answered", 
-                    "enter_personal_details_online_answered", "keep_your_passwords_answered", 
-                    "victim_of_online_scam_answered", "nline_accounts_hacked_answered",
-                    "safety_level_quiz_score", "breach_found"
-                ]
-
-                model_df = df_camp[features_list + ["purcheas_ind"]].dropna()
-
-                if model_df.shape[0] > 30:
-                    col_main = st.columns([3, 2])
-                    with col_main[0]:
-                        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-
-                        X = model_df.drop("purcheas_ind", axis=1)
-                        y = model_df["purcheas_ind"]
-
-                        model = RandomForestClassifier(n_estimators=100, random_state=42)
-                        model.fit(X, y)
-
-                        importances = pd.DataFrame({
-                            "Feature": X.columns,
-                            "Importance": model.feature_importances_
-                        }).sort_values(by="Importance", ascending=False)
-
-                        feature_display_names = {
-                            "use_the_internet_for_answered": "Internet Usage",
-                            "do_on_social_media_answered": "Social Media Activity",
-                            "enter_personal_details_online_answered": "Personal Details Sharing",
-                            "keep_your_passwords_answered": "Password Management",
-                            "victim_of_online_scam_answered": "Past Scam Victim",
-                            "nline_accounts_hacked_answered": "Account Hacking History",
-                            "safety_level_quiz_score": "Safety Quiz Score",
-                            "breach_found": "Security Breach"
-                        }
-
-                        importances["Display"] = importances["Feature"].map(feature_display_names)
-
-                        fig, ax = plt.subplots(figsize=(7, 4.5))
-                        colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(importances)))
-                        ax.barh(importances["Display"], importances["Importance"], color=colors)
-
-                        ax.set_xlabel("Importance Score", fontsize=10, color="#555")
-                        fig, ax = set_plot_style(fig, ax)
-
-                        for i, v in enumerate(importances["Importance"]):
-                            ax.text(v + 0.005, i, f"{v:.3f}", va="center", fontsize=9, color="#555")
-
-                        ax.invert_yaxis()
-                        plt.tight_layout()
-                        st.pyplot(fig)
-
-                        st.markdown("</div>", unsafe_allow_html=True)
-
-                    with col_main[1]:
-                        top_feature = importances.iloc[0]["Display"]
-                        st.markdown(f"""
-                            <div class="insight-box">
-                                <div class="insight-title">Top Feature Insight</div>
-                                <div class="insight-details">
-                                    <strong>Strongest Predictor:</strong><br>
-                                    {top_feature} is the strongest indicator for purchase.
-                                </div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.info("Not enough data for General Features analysis. Minimum 30 records required.")
-
-            # SPECIFIC ANSWERS TAB
-            with tabs[1]:
-                insight_text = ""
-                prefixes = [
-                    "use_the_internet_for_", "do_on_social_media_", 
-                    "enter_personal_details_online_", "keep_your_passwords_", 
-                    "victim_of_online_scam_", "nline_accounts_hacked_"
-                ]
-
-                option_columns = [col for col in df.columns if any(col.startswith(p) for p in prefixes)]
-                model_df_detail = df_camp[option_columns + ["purcheas_ind"]].dropna()
-
-                if model_df_detail.shape[0] > 30:
-                    col_main = st.columns([3, 2])
-                    with col_main[0]:
-                        st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-
-                        X_detail = model_df_detail.drop("purcheas_ind", axis=1)
-                        y_detail = model_df_detail["purcheas_ind"]
-
-                        model_detail = RandomForestClassifier(n_estimators=100, random_state=42)
-                        model_detail.fit(X_detail, y_detail)
-
-                        importances_detail = pd.DataFrame({
-                            "Feature": X_detail.columns,
-                            "Importance": model_detail.feature_importances_
-                        }).sort_values(by="Importance", ascending=False).head(10)
-
-                        answer_mapping = {
-                            "use_the_internet_for_1": "Social media",
-                            "use_the_internet_for_2": "Banking & Finance",
-                            "use_the_internet_for_3": "Online shopping",
-                            "use_the_internet_for_4": "Gaming",
-                            "use_the_internet_for_5": "Streaming",
-                            "use_the_internet_for_6": "Research & Education",
-                            "do_on_social_media_1": "News/Events",
-                            "do_on_social_media_2": "Post Photos",
-                            "do_on_social_media_3": "Entertainment",
-                            "do_on_social_media_4": "Brand Research",
-                            "enter_personal_details_online_1": "Credit Card",
-                            "enter_personal_details_online_2": "Phone Number",
-                            "enter_personal_details_online_3": "Passport",
-                            "enter_personal_details_online_4": "Date of Birth",
-                            "enter_personal_details_online_5": "Address",
-                            "enter_personal_details_online_6": "SSN",
-                            "keep_your_passwords_1": "Notepad",
-                            "keep_your_passwords_2": "Computer",
-                            "keep_your_passwords_3": "Password Manager",
-                            "keep_your_passwords_4": "Remember Mentally",
-                            "victim_of_online_scam_1": "No",
-                            "victim_of_online_scam_2": "Yes",
-                            "nline_accounts_hacked_1": "No",
-                            "nline_accounts_hacked_2": "Yes",
-                        }
-
-                        question_mapping = {
-                            "use_the_internet_for_": "What do you use the internet for?",
-                            "do_on_social_media_": "What do you do on social media?",
-                            "enter_personal_details_online_": "Do you enter personal details online?",
-                            "keep_your_passwords_": "How do you keep your passwords?",
-                            "victim_of_online_scam_": "Victim of online scam?",
-                            "nline_accounts_hacked_": "Account hacked before?"
-                        }
-
-                        importances_detail["Display"] = importances_detail["Feature"].map(answer_mapping)
-                        importances_detail["Question"] = importances_detail["Feature"].apply(
-                            lambda x: next((question_mapping[p] for p in prefixes if x.startswith(p)), "")
-                        )
-
-                        fig, ax = plt.subplots(figsize=(7, 4.5))
-                        colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(importances_detail)))
-                        display_labels = importances_detail["Display"].fillna(importances_detail["Feature"])
-                        ax.barh(display_labels, importances_detail["Importance"], color=colors)
-
-                        ax.set_xlabel("Importance Score", fontsize=10, color="#555")
-                        fig, ax = set_plot_style(fig, ax)
-
-                        for i, v in enumerate(importances_detail["Importance"]):
-                            ax.text(v + 0.005, i, f"{v:.3f}", va="center", fontsize=9, color="#555")
-
-                        ax.invert_yaxis()
-                        plt.tight_layout()
-                        st.pyplot(fig)
-
-                        st.markdown("</div>", unsafe_allow_html=True)
-
-                    with col_main[1]:
-                        top_answer = importances_detail.iloc[0]["Display"]
-                        related_question = importances_detail.iloc[0]["Question"]
-                        st.markdown(f"""
-                            <div class="insight-box">
-                                <div class="insight-title">Top Answer Insight</div>
-                                <div class="insight-details">
-                                    <strong>Most Influential Answer:</strong><br>
-                                    {top_answer}<br><br>
-                                    <strong>Related Question:</strong><br>
-                                    "{related_question}"
-                                </div>
-                            </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.info("Not enough data for Specific Answers analysis. Minimum 30 records required.")
-
-
-
-            # ====== Conversion Rate by Campaign ======
-            st.markdown("<div class='section-title'>Conversion Rate by Campaign</div>", unsafe_allow_html=True)
-
-            # Create columns for chart and insight
-            conv_rate_cols = st.columns([3, 2])
-
-            with conv_rate_cols[0]:
-                # Data Preparation
-                all_campaigns = (
-                    df.groupby('Campaign number')
-                    .agg(num_exposed=('ruserid', 'count'), num_purchases=('purcheas_ind', 'sum'))
-                    .reset_index()
-                )
-
-                all_campaigns['conversion_rate'] = (all_campaigns['num_purchases'] / all_campaigns['num_exposed']) * 100
-                all_campaigns = all_campaigns[all_campaigns['num_exposed'] > 0].sort_values(by='conversion_rate', ascending=True)
-
-                filtered_campaign = int(selected_camp_number)
-
-                # Bar chart
-                st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-
-                fig, ax = plt.subplots(figsize=(7, 4.5))
-                colors = plt.cm.Blues(np.linspace(0.6, 0.95, len(all_campaigns)))
-
-                bars = ax.bar(
-                    all_campaigns['Campaign number'].astype(str),
-                    all_campaigns['conversion_rate'],
-                    color=colors,
-                    edgecolor="black",
-                    width=0.5
-                )
-
-                # Highlight selected campaign in bold blue
-                for i, bar in enumerate(bars):
-                    campaign_number = all_campaigns.iloc[i]['Campaign number']
-                    if campaign_number == filtered_campaign:
-                        bar.set_color('#4361EE')  # צבע כחול בוהק לקמפיין שנבחר
-
-
-                ax.set_xlabel("")
-                ax.set_ylabel("Conversion Rate (%)", fontsize=10, color="#555")
-
-                ax.grid(axis='y', linestyle='--', alpha=0.3)
-                ax.spines['top'].set_visible(False)
-                ax.spines['right'].set_visible(False)
-                ax.spines['left'].set_color('#DDE1E4')
-                ax.spines['bottom'].set_color('#DDE1E4')
-
-                ax.tick_params(axis='y', labelsize=8)
-                ax.tick_params(axis='x', labelsize=8, rotation=45)
-
-                for bar in bars:
-                    height = bar.get_height()
-                    ax.text(
-                        bar.get_x() + bar.get_width()/2,
-                        height,
-                        f"{height:.1f}%",
-                        ha='center',
-                        va='bottom',
-                        fontsize=9,
-                        color="#555"
-                    )
-
-                fig.patch.set_facecolor('white')
-                ax.set_facecolor('white')
-                ax.set_axisbelow(True)
-
-                plt.tight_layout()
-                st.pyplot(fig)
-
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            with conv_rate_cols[1]:
-                # Insight box like in Journey section
-                selected_rate = all_campaigns[all_campaigns['Campaign number'] == filtered_campaign]['conversion_rate'].values[0]
-                campaign_rank = all_campaigns.reset_index().index[all_campaigns['Campaign number'] == filtered_campaign].tolist()[0] + 1
-                total_campaigns = all_campaigns.shape[0]
-
-                st.markdown(f"""
-                    <div class="insight-box">
-                        <div class="insight-title">Conversion Rate Insight</div>
-                        <div class="insight-metric">{selected_rate:.1f}%</div>
-                        <div class="insight-details">
-                            Campaign <strong>{filtered_campaign}</strong> ranks <strong>{campaign_rank} out of {total_campaigns}</strong> campaigns in conversion performance.
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
