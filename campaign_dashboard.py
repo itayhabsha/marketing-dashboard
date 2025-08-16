@@ -9,6 +9,10 @@ import base64
 import streamlit.components.v1 as components
 from pathlib import Path
 
+APP_DIR = Path(__file__).parent
+LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
+
+
 # ====== Page Configuration ======
 st.set_page_config(
     page_title="Marketing Insights Dashboard",
@@ -32,10 +36,6 @@ if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 if "login_attempt_failed" not in st.session_state:
     st.session_state.login_attempt_failed = False
-
-# Resolve logo path
-APP_DIR = Path(__file__).parent
-LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
 
 # Custom CSS for Login Form
 st.markdown("""
@@ -403,18 +403,18 @@ st.markdown("""
 }
 
 .nav-button {
-    display: block,
-    width: 100%,
-    background-color: #f0f2f6,
-    color: #333,
-    border: 1px solid #ccc,
-    border-radius: 8px,
-    padding: 12px 0,
-    text-align: center,
-    margin-bottom: 10px,
-    font-size: 16px,
-    font-weight: 600,
-    text-decoration: none,
+    display: block;
+    width: 100%;
+    background-color: #f0f2f6;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px 0;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
     transition: background-color 0.2s ease;
 }
 
