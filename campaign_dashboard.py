@@ -644,14 +644,6 @@ elif st.session_state.page == "compare_campaigns":
 
 # ====== SINGLE CAMPAIGN ANALYSIS PAGE ======
 elif st.session_state.page == "single_campaign":
-    components.html(
-        """
-        <script>
-            window.parent.scrollTo(0, 0);
-        </script>
-        """,
-        height=0
-    )
 
     with st.container():
         st.markdown("""
@@ -1213,3 +1205,4 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
