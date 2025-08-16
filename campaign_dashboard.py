@@ -90,35 +90,35 @@ st.markdown("""
 encoded_logo = load_logo_b64()
 
 st.markdown("<div class='centered-container'>", unsafe_allow_html=True)
-    
-    if encoded_logo:
-        st.markdown(f"""
-            <div style='text-align: center; margin-bottom: 10px;'>
-                <img src='data:image/png;base64,{encoded_logo}' style='width: 240px;' />
-            </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("<div class='centered-title'>Marketing Dashboard Login</div>", unsafe_allow_html=True)
 
-    with st.form("login_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
+if encoded_logo:
+    st.markdown(f"""
+        <div style='text-align: center; margin-bottom: 10px;'>
+            <img src='data:image/png;base64,{encoded_logo}' style='width: 240px;' />
+        </div>
+    """, unsafe_allow_html=True)
 
-        if submitted:
-            if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
-                st.session_state.authenticated = True
-                st.session_state.username = username
-                st.session_state.login_attempt_failed = False
-                st.rerun()
-            else:
-                st.session_state.login_attempt_failed = True
+st.markdown("<div class='centered-title'>Marketing Dashboard Login</div>", unsafe_allow_html=True)
 
-    if st.session_state.get("login_attempt_failed", False):
-        st.error("❌ Incorrect username or password. Please try again.")
+with st.form("login_form"):
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    submitted = st.form_submit_button("Login")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.stop()
+    if submitted:
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+            st.session_state.authenticated = True
+            st.session_state.username = username
+            st.session_state.login_attempt_failed = False
+            st.rerun()
+        else:
+            st.session_state.login_attempt_failed = True
+
+if st.session_state.get("login_attempt_failed", False):
+    st.error("❌ Incorrect username or password. Please try again.")
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.stop()
 
 # File Upload Section
 encoded_logo = load_logo_b64()
@@ -1214,5 +1214,6 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
 
 
