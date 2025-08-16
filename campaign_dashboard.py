@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 import seaborn as sns
 import base64
 import streamlit.components.v1 as components
+from pathlib import Path
 
 # ====== Page Configuration ======
 st.set_page_config(
@@ -31,6 +32,10 @@ if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 if "login_attempt_failed" not in st.session_state:
     st.session_state.login_attempt_failed = False
+
+# Resolve logo path
+APP_DIR = Path(__file__).parent
+LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
 
 # Custom CSS for Login Form
 st.markdown("""
@@ -68,7 +73,7 @@ st.markdown("""
 # Login Interface
 if not st.session_state.get("authenticated", False):
     try:
-        with open(r"C:\Users\hroy2\OneDrive\Desktop\ResonLabs.png", "rb") as f:
+        with open(LOGO_PATH, "rb") as f:
             encoded_logo = base64.b64encode(f.read()).decode()
     except FileNotFoundError:
         encoded_logo = ""
@@ -107,7 +112,7 @@ if not st.session_state.get("authenticated", False):
 # File Upload Section
 if st.session_state.uploaded_file is None:
     try:
-        with open(r"C:\Users\hroy2\OneDrive\Desktop\ResonLabs.png", "rb") as f:
+        with open(LOGO_PATH, "rb") as f:
             encoded_logo = base64.b64encode(f.read()).decode()
     except FileNotFoundError:
         encoded_logo = ""
@@ -232,7 +237,7 @@ st.markdown("""
 
 # Sidebar Logo
 try:
-    with open(r"C:\Users\hroy2\OneDrive\Desktop\ResonLabs.png", "rb") as f:
+    with open(LOGO_PATH, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
     
     with st.sidebar:
@@ -398,18 +403,18 @@ st.markdown("""
 }
 
 .nav-button {
-    display: block;
-    width: 100%;
-    background-color: #f0f2f6;
-    color: #333;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 12px 0;
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
+    display: block,
+    width: 100%,
+    background-color: #f0f2f6,
+    color: #333,
+    border: 1px solid #ccc,
+    border-radius: 8px,
+    padding: 12px 0,
+    text-align: center,
+    margin-bottom: 10px,
+    font-size: 16px,
+    font-weight: 600,
+    text-decoration: none,
     transition: background-color 0.2s ease;
 }
 
