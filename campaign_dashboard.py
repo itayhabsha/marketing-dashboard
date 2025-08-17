@@ -40,7 +40,7 @@ st.set_page_config(
 
 # User Credentials
 USER_CREDENTIALS = {
-    "resonlabs": "1234"
+    "reasonlabs": "1234"
 }
 
 # Initialize Session State
@@ -1205,4 +1205,5 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
 
