@@ -10,14 +10,14 @@ import streamlit.components.v1 as components
 from pathlib import Path
 
 APP_DIR = Path(__file__).parent
-LOGO_PATH = APP_DIR / "assets" / "ResonLabs.png"
+LOGO_PATH = APP_DIR / "assets" / "Reasonlabs.png"
 
 def load_logo_b64():
     # Smart attempts to find the logo file
     candidates = [
         LOGO_PATH,
-        APP_DIR / "ResonLabs.png",
-        APP_DIR.parent / "assets" / "ResonLabs.png",
+        APP_DIR / "Reasonlabs.png",
+        APP_DIR.parent / "assets" / "Reasonlabs.png",
     ]
     tried = []
     for p in candidates:
@@ -1205,5 +1205,6 @@ elif st.session_state.page == "campaign_insights":
                 </div>
             </div>
             """, unsafe_allow_html=True)
+
 
 
